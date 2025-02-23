@@ -1,0 +1,12 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/DUM-E/V0.2
+/DUM-E/V0.1
+/DUM-E/Plan.txt
+/DUM-E/V0.3/OldModel
+*.txt
+/Robot DUM-E/V0.2
+/Robot DUM-E/V0.1
+/Robot DUM-E/V0.3/OldModel
