@@ -12,6 +12,10 @@ R = round(R * 10^9)/10^9;
 Sb = R(1,3);
 Cb = sqrt(1-Sb^2);
 
+if(Cb == 0)
+    Cb = 1e-10;
+end
+
 Sa = -R(2,3)/Cb;
 Ca = R(3,3)/Cb;
 

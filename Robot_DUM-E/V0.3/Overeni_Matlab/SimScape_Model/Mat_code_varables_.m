@@ -6,12 +6,34 @@ clear
 run("Robot_Arm_DataFile.m");
 
 %% Parametry
-d0 = 0.1207;
+a0 = 0;
 a1 = 0.265;
 a2 = 0.22313448854;
 a3 = 0.0995;
-d4 = 0.1355;
+a4 = 0;
+a5 = 0;
+
+alpha0 = -pi/2;
+alpha1 = 0;
+alpha2 = 0;
+alpha3 = -pi/2;
+alpha4 = pi/2;
+alpha5 = 0;
+
+d0 = 0.1207;
+d1 = 0;
+d2 = 0;
+d3 = 0;
+d4 = 0.01355;
 d5 = 0.200;
+
+% initial value of thetas
+th0 = 0;
+th1 = 0;
+th2 = deg2rad(211.6244444);
+th3 = deg2rad(328.3756);
+th4 = deg2rad(90);
+th5 = 0;
 
 %% parameters for model
 

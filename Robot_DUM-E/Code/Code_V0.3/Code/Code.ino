@@ -83,6 +83,15 @@
   char Text6IS[] = "|6|";
   char Text7IS[] = "|G|";
 
+  // index (name) of coordinates
+  char Text1IC[] = "|X|";
+  char Text2IC[] = "|Y|";
+  char Text3IC[] = "|Z|";
+  char Text4IC[] = "|A|";
+  char Text5IC[] = "|B|";
+  char Text6IC[] = "|G|";
+  char Text7IC[] = "|E|"; // end effector
+
 // set joint angles page (all)
   int NumSJAPageRow = 7;
   char Text1SJA[] = "Joints | Angle"; //
@@ -92,7 +101,7 @@
 // set coordinates page
   int NumSCPageRow = 7;
   char Text1SC[] = "Axes | Coordinate";
-  char *DispTextSC[] = {Text1SC, Text1IS, Text2IS, Text3IS, Text4IS, Text5IS, Text6IS, Text7IS};
+  char *DispTextSC[] = {Text1SC, Text1IC, Text2IC, Text3IC, Text4IC, Text5IC, Text6IC, Text7IC};
 
 // set joint angle page (one)
 char Text1SJAO[] = "Set new angle";
@@ -106,20 +115,21 @@ char Text3SJAO[] = "E change step";
   int DispPage = 0;
 
 // parametry a matice D-H
-  float d0 = 0.1207;
-  float a1 = 0.2650;
-  float a2 = 0.2231;
-  float a3 = 0.0995;
-  float d4 = 0.1355;
-  float d5 = 0.2000;
+  float const d0 = 0.1207;
+  float const d4 = 0.0136;
+  float const d5 = 0.2000;
+  
+  float const a1 = 0.2650;
+  float const a2 = 0.2231;
+  float const a3 = 0.0995;
 
-  float th2 = 211.62; // 3.6935; rad
-  float th3 = 328.38; // 5.7312; rad
-  float th4 = 90; // 1.5708; rad
+  float const th2 = 211.62; // 3.6935; rad
+  float const th3 = 328.38; // 5.7312; rad
+  float const th4 = 90; // 1.5708; rad
 
-  float al0 = -M_PI/2;
-  float al3 = -M_PI/2;
-  float al4 = M_PI/2;
+  float const al0 = -90;
+  float const al3 = -90;
+  float const al4 = 90;
 
   BLA::Matrix<4, 4> T01;
   BLA::Matrix<4, 4> T12;
@@ -139,9 +149,9 @@ char Text3SJAO[] = "E change step";
   Servo servoG;
 
 // parameters and variables for driving servo
-  float const HomeServoAngle[] = {90, 0, 180, 90, 90, 90, 0}; // hodnoty natoceni pro Home Position
-  float const StrukturalAngle[] = {-90, 0, -180, -90, -90, -90, 0}; // additivní úhel vycházející ze struktury modelu pro vypocet PKU
-  float ServoAngle[] = {0, 0, 0, 0, 0, 0, 0}; // natoceni jednotlivych serv - B, 2, 3, 4, 5, 6, G
+  double const HomeServoAngle[] = {90, 0, 180, 90, 90, 90, 0}; // hodnoty natoceni pro Home Position
+  double const StrukturalAngle[] = {-90, 0, -180, -90, -90, -90, 0}; // additivní úhel vycházející ze struktury modelu pro vypocet PKU
+  double ServoAngle[] = {0, 0, 0, 0, 0, 0, 0}; // natoceni jednotlivych serv - B, 2, 3, 4, 5, 6, G
   int const MaxAngle = 180;
   int const MinAngle = 0;
 
@@ -149,22 +159,22 @@ char Text3SJAO[] = "E change step";
   int ServoStepIndex = 1;
   int CoordinateStep = 1; // step for changing coordinates
 
-  float Coordinates[] = {0, 0, 0, 0, 0, 0}; // X, Y, Z, Alfa, Beta, Gamma, Grip
+  double Coordinates[] = {0, 0, 0, 0, 0, 0}; // X, Y, Z, Alfa, Beta, Gamma, Grip
 
 // PKU (prima kinematicka uloha) parametry
-  float Sa; // sin(alpha)
-  float Ca; // cos(alpha)
-  float Sb; // sin(beta)
-  float Cb; // cos(beta)
-  float Sg; // sin(gamma)
-  float Cg; // cos(gamma)
+  double Sa; // sin(alpha)
+  double Ca; // cos(alpha)
+  double Sb; // sin(beta)
+  double Cb; // cos(beta)
+  double Sg; // sin(gamma)
+  double Cg; // cos(gamma)
 
   int InteruptDelay = 0;
   int var; //promena pro lib. aktualni pouziti napr. Up(), Down(), SetAngle()
-  float var_f1; // promena (float) pro lib. pouziti
-  float var_f2; // promena (float) pro lib. pouziti mozno pouzit jen k ulozeni a cteni v ramci jedne funkce
-  float var_f3; // promena (float) pro lib. pouziti
-  float var_f4; // promena (float) pro lib. pouziti mozno pouzit jen k ulozeni a cteni v ramci jedne funkce 
+  double var_f1; // promena (float) pro lib. pouziti
+  double var_f2; // promena (float) pro lib. pouziti mozno pouzit jen k ulozeni a cteni v ramci jedne funkce
+  double var_f3; // promena (float) pro lib. pouziti
+  double var_f4; // promena (float) pro lib. pouziti mozno pouzit jen k ulozeni a cteni v ramci jedne funkce 
 
 
 void setup()
@@ -198,13 +208,8 @@ void setup()
   servo6.attach(PIN_S_6);
   servoG.attach(PIN_S_G);
 
-  servoB.write(HomeServoAngle[0]);
-  servo2.write(HomeServoAngle[1]);
-  servo3.write(HomeServoAngle[2]);
-  servo4.write(HomeServoAngle[3]);
-  servo5.write(HomeServoAngle[4]);
-  servo6.write(HomeServoAngle[5]);
-  servoG.write(HomeServoAngle[6]);
+  // nastaveni robota do home position
+    SetServo(HomeServoAngle);
 
   // Kopírování prvků celé matice
     memcpy(ServoAngle, HomeServoAngle, sizeof(HomeServoAngle));
@@ -551,12 +556,12 @@ void Back(){ // nastaveni funkcnosti pro klavesu Back
   Serial.println("B");
 }
 
-float deg2rad(float degrees){ // funkce prevod stupne na radinany
+double deg2rad(double degrees){ // funkce prevod stupne na radinany
   return degrees / 360 * 2 * M_PI;
 }
 
-float rad2deg(float rad){ // funkce prevod radinany na stupne
-  return (rad / 2 * M_PI) * 360;
+double rad2deg(double rad){ // funkce prevod radinany na stupne
+  return (rad / (2 * M_PI)) * 360;
 }
 
 int Min(int a, int b){
@@ -575,7 +580,7 @@ void DisplayInterface(char* CharArray[], int FirstPosition) { // obecna funkce  
   };
 }
 
-void SetServo(float Angles[]) { // funkce nastavý serva na uhel
+void SetServo(double Angles[]) { // funkce nastavý serva na uhel
   servoB.write(Angles[0]);
   servo2.write(Angles[1]);
   servo3.write(Angles[2]);
@@ -638,23 +643,23 @@ void SetCoordinate(){ // vizualizace stranky nastaveni jednotlivych souradnic
 
 void TransformMatrix(BLA::Matrix<4, 4>& mat, float d, float theta, float a, float alpha){ //create Transformation matrix for D-H method
 
-    var_f1 = cos(theta);
-    var_f2 = sin(theta);
-    var_f3 = cos(alpha);
-    var_f4 = sin(alpha);
+    var_f1 = cos(deg2rad(theta));
+    var_f2 = sin(deg2rad(theta));
+    var_f3 = cos(deg2rad(alpha));
+    var_f4 = sin(deg2rad(alpha));
 
     mat = {var_f1, -var_f2*var_f3,  var_f2*var_f4, a*var_f1,
            var_f2,  var_f1*var_f3, -var_f1*var_f4, a*var_f2,
            0,       var_f4,         var_f3,        d,
            0,           0,          0,             1};
-    // Serial.println(mat);
+
 }
 
 
-void PKU(){ // funkce PKU - calculate and set coordinates into memory
+void PKU(){ // funkce PKU - calculate and set angle coordinates into memory
   TransformMatrix(T01, d0, (ServoAngle[0]+StrukturalAngle[0]), 0, al0);
-  TransformMatrix(T12, 0, (ServoAngle[1]+StrukturalAngle[1]), a1, 0);
-  TransformMatrix(T23, 0, (ServoAngle[2]+StrukturalAngle[2]+th2), a2, 0);
+  TransformMatrix(T12, 0, (-ServoAngle[1]+StrukturalAngle[1]), a1, 0);
+  TransformMatrix(T23, 0, (-ServoAngle[2]+StrukturalAngle[2]+th2), a2, 0);
   TransformMatrix(T34, 0, (ServoAngle[3]+StrukturalAngle[3]+th3), a3, al3);
   TransformMatrix(T45, d4, (ServoAngle[4]+StrukturalAngle[4]+th4), 0, al4);
   TransformMatrix(T56, d5, (ServoAngle[5]+StrukturalAngle[5]), 0, 0);
@@ -665,8 +670,6 @@ void PKU(){ // funkce PKU - calculate and set coordinates into memory
   T06 = T06 * T45;
   T06 = T06 * T56;
 
-  Serial.println(T06);
-
   Coordinates[0] = T06(0,3); // X
   Coordinates[1] = T06(1,3); // Y
   Coordinates[2] = T06(2,3); // Z
@@ -674,11 +677,26 @@ void PKU(){ // funkce PKU - calculate and set coordinates into memory
   Sb = T06(0,2);
   Cb = sqrt(1-(Sb*Sb));
 
+  if(abs(Cb) <= 0.000000001){
+    Cb = 0.000000001;
+  };
+
   Sa = -T06(1,2)/Cb;
   Ca = T06(2,2)/Cb;
 
   Sg = -T06(0,1)/Cb;
   Cg = T06(0,0)/Cb;
+
+/*  Serial.print("Cb: ");
+  Serial.println(Cb*1000000);
+  Serial.print("Sg: ");
+  Serial.println(Sg*1000000);
+  Serial.print("Cg: ");
+  Serial.println(Cg*1000000);
+  Serial.print("g: ");
+  Serial.println(atan2(Sg,Cg));
+  Serial.print("Sg/Cg: ");
+  Serial.println(Sg/Cg); */
 
   Coordinates[3] = rad2deg(atan2(Sa,Ca)); // alpha
   Coordinates[4] = rad2deg(atan2(Sb,Cb)); // beta
@@ -686,6 +704,6 @@ void PKU(){ // funkce PKU - calculate and set coordinates into memory
 
 }
 
-void Pos2Angle(){ //funkce IKU
+void IKU(){ //funkce IKU - calculate and set axes coordinates into memory
 
 }
